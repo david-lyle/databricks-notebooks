@@ -21,5 +21,5 @@ jobs:
     - name: curl
       uses: wei/curl@v1
       with:
-        args -X PATCH  'https://163381681961974.4.gcp.databricks.com/api/2.0/repos/4169005391079312' -H "Authorization: Bearer $${{ secrets.DATABRICKS_TOKEN }}" -H "Content-Type: application/json" -d '{ "branch": "main" }'
+        args -X PATCH  'https://163381681961974.4.gcp.databricks.com/api/2.0/repos/4169005391079312' -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" -H "Content-Type: application/json" -d '{ "branch": "main" }'
         
