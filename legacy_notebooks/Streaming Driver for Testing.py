@@ -68,5 +68,5 @@ query = (
 
 # MAGIC %python
 # MAGIC from time import sleep
-# MAGIC sleep(60) 
+# MAGIC sleep(300) 
 # MAGIC query.stop()
