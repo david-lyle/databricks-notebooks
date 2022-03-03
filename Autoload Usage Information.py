@@ -6,6 +6,7 @@ dbutils.widgets.text('Autoload File Path', '')
 
 # COMMAND ----------
 
+spark.sql("create database if not exists " + getArgument('Database'))
 spark.sql("use " + getArgument('Database'))
 
 # COMMAND ----------
