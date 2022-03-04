@@ -111,8 +111,7 @@ usageDF = (df.select("workspaceId",
 
 streamingQuery = (usageDF.writeStream 
   .option("mergeSchema", "true") 
-  .option("checkpointLocation", checkpoint_path)  
-  .option("maxFilesPerTrigger", 1)                  
+  .option("checkpointLocation", checkpoint_path)                   
   .trigger(once=True) 
   .foreachBatch(drop_duplicates)  
   .queryName("WriteBilling")
