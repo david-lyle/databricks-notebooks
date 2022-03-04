@@ -6,6 +6,21 @@ dbutils.widgets.text('Autoload File Path', '')
 
 # COMMAND ----------
 
+#Call this in separate cell to begin from scratch
+def deleteData():
+    dbutils.fs.rm(getArgument('Checkpoint Path'),recurse=True)
+
+    spark.sql("""
+    drop table if exists billingusage
+    """)
+
+
+# COMMAND ----------
+
+#deleteData()
+
+# COMMAND ----------
+
 spark.sql("create database if not exists " + getArgument('Database'))
 spark.sql("use " + getArgument('Database'))
 
@@ -16,7 +31,8 @@ create table if not exists billingusage(workspaceId string, timestamp timestamp,
                           clusterId string, clusterName string, 
                           clusterNodeType string, clusterOwnerUserId string, 
                           sku string, dbus double, machineHours double, 
-                          clusterOwnerUserName string, tags map<string, string>, cost double)
+                          clusterOwnerUserName string, tags map<string, string>, cost double,
+                          billingDate date) partitioned by (billingDate)
 """)
 
 # COMMAND ----------
@@ -46,7 +62,6 @@ import pyspark.sql.functions as func
 usagefilePath = getArgument('Autoload File Path')
 checkpoint_path = getArgument('Checkpoint Path')
 schema_location = getArgument('Schema Location')
-
 
 df = (spark.readStream.format("cloudFiles") 
   .option("cloudFiles.format", "csv") 
@@ -89,7 +104,7 @@ usageDF = (df.select("workspaceId",
                        when(col("sku") == "Jobs Compute", col("dbus") * .22)
                        .when(col("sku") == "All Purpose Compute", col("dbus") * .55)                       
                        .otherwise(.55))
-           
+           .withColumn("billingDate", to_date(col("timestamp")))
            .drop("userId")
            .drop("clusterCustomTags")           
           )
@@ -100,5 +115,12 @@ streamingQuery = (usageDF.writeStream
   .option("maxFilesPerTrigger", 1)                  
   .trigger(once=True) 
   .foreachBatch(drop_duplicates)  
+  .queryName("WriteBilling")
   .start()                  
    )          
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC --optimize table
+# MAGIC optimize billingusage 
