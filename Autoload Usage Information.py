@@ -32,7 +32,7 @@ create table if not exists billingusage(workspaceId string, timestamp timestamp,
                           clusterNodeType string, clusterOwnerUserId string, 
                           sku string, dbus double, machineHours double, 
                           clusterOwnerUserName string, tags map<string, string>, cost double,
-                          billingDate date) partitioned by (billingDate)
+                          billingYM string) partitioned by (billingYM)
 """)
 
 # COMMAND ----------
@@ -92,6 +92,7 @@ usageDF = (df.select("workspaceId",
                      .when(col("sku") == "ENTERPRISE_ALL_PURPOSE_COMPUTE", "All Purpose Compute")
                      .when(col("sku") == "ENTERPRISE_JOBS_COMPUTE", "Jobs Compute")
                      .when(col("sku") == "PREMIUM_ALL_PURPOSE_COMPUTE_(PHOTON)", "All Purpose Compute")
+                     .when(col("sku") == "PREMIUM_SQL_COMPUTE", "DBSql Compute")
                      .otherwise(col("sku")).alias("sku"),
                      "dbus",
                      "machineHours",
@@ -104,7 +105,7 @@ usageDF = (df.select("workspaceId",
                        when(col("sku") == "Jobs Compute", col("dbus") * .22)
                        .when(col("sku") == "All Purpose Compute", col("dbus") * .55)                       
                        .otherwise(.55))
-           .withColumn("billingDate", to_date(col("timestamp")))
+           .withColumn("billingYM", date_format(col("timestamp"), "yyyy-MM"))
            .drop("userId")
            .drop("clusterCustomTags")           
           )
