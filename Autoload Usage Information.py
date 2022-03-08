@@ -118,9 +118,3 @@ streamingQuery = (usageDF.writeStream
   .queryName("WriteBilling")
   .start()                  
    )          
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC --optimize table
-# MAGIC optimize billingusage 
